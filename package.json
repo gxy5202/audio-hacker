@@ -1,6 +1,6 @@
 {
   "name": "audio-hacker",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A magical library for controlling audio pitch and volume, based on jungle.js",
   "scripts": {
     "build": "vite build"

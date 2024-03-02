@@ -1,5 +1,5 @@
 # 🎧audio-hacker
-A magical library for controlling audio pitch and volume, based on jungle.js
+A magical library for controlling audio pitch and volume, based on [jungle.js](https://github.com/cwilso/Audio-Input-Effects/blob/master/js/jungle.js)
 
 # Installation
 ```
@@ -24,11 +24,7 @@ const video = document.querySelector('video');
 
 const source = audioCtx.createMediaElementSource(video);
 
-const audioController = new Audiohacker(audioCtx);
-
-audioController.output.connect(audioCtx.destination);
-
-source.connect(v.input);
+const audioController = new Audiohacker(audioCtx, source);
 
 ```
 
@@ -50,9 +46,13 @@ audioController.setVolume(3.3);
 
 ```
 
-## Disconnect
+# Disconnect
 ```javascript
 
 audioController.disconnect();
 
 ```
+
+# What more
+
+If you want to do it in a simpler way, use [Video Roll](https://github.com/VideoRoll/VideoRoll) browser extension. 

@@ -60,7 +60,7 @@ export default class Audiohacker {
     delay1: DelayNode;
     delay2: DelayNode;
 
-    constructor(context: AudioContext) {
+    constructor(context: AudioContext, mediaSource: MediaElementAudioSourceNode) {
         this.context = context;
         // Create nodes for the input and output of this "module".
         const input = context.createGain();
@@ -161,6 +161,9 @@ export default class Audiohacker {
         this.delay2 = delay2;
 
         this.setDelay(delayTime);
+
+        this.output.connect(this.context.destination);
+        mediaSource.connect(this.input);
     }
 
     createFadeBuffer(context: AudioContext, activeTime: number, fadeTime: number): AudioBuffer {
