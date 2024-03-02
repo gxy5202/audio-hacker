@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "allowJs": true,
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "rootDir": "./",
+        "baseUrl": "./", // types文件夹的相对路径
+        "paths": {
+            "*": [
+                "types/*"
+            ]
+        },
+        "lib": [
+            "es2021",
+            "dom"
+        ],
+    },
+    "isolatedModules": true,
+    "files": [
+        "index.ts",
+    ]
+}
