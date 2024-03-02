@@ -1,8 +1,15 @@
 # 🎧audio-hacker
 A magical library for controlling audio pitch and volume, based on jungle.js
 
-# Useage
-## Initial Audiohacker
+# Installation
+```
+npm i audio-hacker
+
+yarn add audio-hacker
+
+pnpm add audio-hacker
+```
+# Initial Audiohacker
 
 ```javascript
 import Audiohacker from 'audio-hacker';
@@ -25,7 +32,7 @@ source.connect(v.input);
 
 ```
 
-## Update pitch
+# Update pitch
 ```javascript
 
 // best step 0.01
@@ -34,7 +41,7 @@ audioController.setPitchOffset(-0.12);
 
 ```
 
-## Update volume
+# Update volume
 ```javascript
 
 // minimum value is 0;
