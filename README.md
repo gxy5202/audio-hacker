@@ -15,9 +15,13 @@ if (audioCtx.state !== 'running') {
 }
 
 const video = document.querySelector('video');
-const source = this.audioCtx.createMediaElementSource(video);
-const audioController = new Audiohacker(this.audioCtx);
-audioController.output.connect(this.audioCtx.destination);
+
+const source = audioCtx.createMediaElementSource(video);
+
+const audioController = new Audiohacker(audioCtx);
+
+audioController.output.connect(audioCtx.destination);
+
 source.connect(v.input);
 
 ```
