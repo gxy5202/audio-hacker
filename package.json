@@ -1,6 +1,6 @@
 {
   "name": "audio-hacker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A magical library for controlling audio pitch and volume, based on jungle.js",
   "scripts": {
     "build": "vite build"
@@ -10,14 +10,7 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/audiohacker.umd.js",
-  "module": "./dist/audiohacker.js",
-  "exports": {
-    ".": {
-      "import": "./dist/audiohacker.js",
-      "require": "./dist/audiohacker.umd.js"
-    }
-  },
+  "main": "./dist/audiohacker.js",
   "keywords": [
     "Web Audio",
     "pitch",

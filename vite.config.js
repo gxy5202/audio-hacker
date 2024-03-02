@@ -10,7 +10,7 @@ export default defineConfig({
             entry: resolve(__dirname, 'index.ts'),
             name: 'audiohacker',
             fileName: 'audiohacker',
-            formats: ['es', 'umd']
+            formats: ['es']
         },
         rollupOptions: {
             treeshake: false
