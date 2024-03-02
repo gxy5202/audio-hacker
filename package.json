@@ -6,15 +6,16 @@
     "build": "vite build"
   },
   "type": "module",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "main": "./dist/audio-hacker.umd.js",
-  "module": "./dist/audio-hacker.js",
+  "main": "./dist/audiohacker.umd.js",
+  "module": "./dist/audiohacker.js",
   "exports": {
     ".": {
-      "import": "./dist/audio-hacker.js",
-      "require": "./dist/audio-hacker.umd.js"
+      "import": "./dist/audiohacker.js",
+      "require": "./dist/audiohacker.umd.js"
     }
   },
   "keywords": [
@@ -25,6 +26,8 @@
     "video",
     "audio"
   ],
+  "homepage": "https://github.com/gxy5202/audio-hacker#readme",
+  "repository": "https://github.com/gxy5202/audio-hacker",
   "author": "Gomi",
   "license": "MIT",
   "dependencies": {
