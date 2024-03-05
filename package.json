@@ -1,6 +1,6 @@
 {
   "name": "audio-hacker",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A magical library for controlling audio pitch and volume, based on jungle.js",
   "scripts": {
     "build": "vite build"
@@ -23,10 +23,8 @@
   "repository": "https://github.com/gxy5202/audio-hacker",
   "author": "Gomi",
   "license": "MIT",
-  "dependencies": {
-    "vite": "^5.1.4"
-  },
   "devDependencies": {
+    "vite": "^5.1.5",
     "vite-plugin-dts": "^3.7.3"
   }
 }
