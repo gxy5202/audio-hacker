@@ -40,6 +40,7 @@ const bufferTime = 0.100;
 export default class Audiohacker {
     // audiocontext
     context: AudioContext;
+    mediaSource: MediaElementAudioSourceNode;
     input: GainNode;
     output: GainNode;
     shiftDownBuffer: AudioBuffer;
@@ -62,6 +63,7 @@ export default class Audiohacker {
 
     constructor(context: AudioContext, mediaSource: MediaElementAudioSourceNode) {
         this.context = context;
+        this.mediaSource = mediaSource;
         // Create nodes for the input and output of this "module".
         const input = context.createGain();
         const output = context.createGain();
