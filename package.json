@@ -1,9 +1,10 @@
 {
   "name": "audio-hacker",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A magical library for controlling audio pitch and volume, based on jungle.js",
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "publish:local": "yalc publish"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -25,6 +26,7 @@
   "license": "MIT",
   "devDependencies": {
     "vite": "^5.1.5",
-    "vite-plugin-dts": "^3.7.3"
+    "vite-plugin-dts": "^3.7.3",
+    "yalc": "1.0.0-pre.53"
   }
 }

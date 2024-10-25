@@ -38,7 +38,6 @@ const fadeTime = 0.050;
 const bufferTime = 0.100;
 
 export default class Audiohacker {
-    // audiocontext
     context: AudioContext;
     mediaSource: MediaElementAudioSourceNode;
     input: GainNode;
@@ -60,6 +59,8 @@ export default class Audiohacker {
     mix2: GainNode;
     delay1: DelayNode;
     delay2: DelayNode;
+
+    sync: DelayNode;
 
     constructor(context: AudioContext, mediaSource: MediaElementAudioSourceNode) {
         this.context = context;
@@ -164,6 +165,8 @@ export default class Audiohacker {
 
         this.setDelay(delayTime);
 
+        this.sync = context.createDelay();
+
         this.output.connect(this.context.destination);
         mediaSource.connect(this.input);
     }
@@ -250,6 +253,10 @@ export default class Audiohacker {
 
     setVolume(volume: number): void {
         this.output.gain.value = volume;
+    }
+
+    setSync(sync: number): void {
+        this.sync.delayTime.value = sync;
     }
 
     disconnect(): void {
