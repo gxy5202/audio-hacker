@@ -421,5 +421,8 @@ export default class Audiohacker {
     disconnect(): void {
         this.input?.disconnect();
         this.output?.disconnect();
+        this.delay?.disconnect();
+        this.panner?.disconnect();
+        this.stereo?.disconnect();
     }
 }
