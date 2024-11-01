@@ -33,9 +33,9 @@
 *
 */
 
-const delayTime = 0.100;
-const fadeTime = 0.050;
-const bufferTime = 0.100;
+const delayTime = 0.1;
+const fadeTime = 0.05;
+const bufferTime = 0.1;
 
 export default class Audiohacker {
     context: AudioContext;
@@ -59,10 +59,15 @@ export default class Audiohacker {
     mix2: GainNode;
     delay1: DelayNode;
     delay2: DelayNode;
+    delay: DelayNode;
+    panner: PannerNode;
+    pannerGain: GainNode;
+    stereo: StereoPannerNode;
 
-    sync: DelayNode;
-
-    constructor(context: AudioContext, mediaSource: MediaElementAudioSourceNode) {
+    constructor(
+        context: AudioContext,
+        mediaSource: MediaElementAudioSourceNode
+    ) {
         this.context = context;
         this.mediaSource = mediaSource;
         // Create nodes for the input and output of this "module".
@@ -76,8 +81,18 @@ export default class Audiohacker {
         const mod2 = context.createBufferSource();
         const mod3 = context.createBufferSource();
         const mod4 = context.createBufferSource();
-        this.shiftDownBuffer = this.createDelayTimeBuffer(context, bufferTime, fadeTime, false);
-        this.shiftUpBuffer = this.createDelayTimeBuffer(context, bufferTime, fadeTime, true);
+        this.shiftDownBuffer = this.createDelayTimeBuffer(
+            context,
+            bufferTime,
+            fadeTime,
+            false
+        );
+        this.shiftUpBuffer = this.createDelayTimeBuffer(
+            context,
+            bufferTime,
+            fadeTime,
+            true
+        );
         mod1.buffer = this.shiftDownBuffer;
         mod2.buffer = this.shiftDownBuffer;
         mod3.buffer = this.shiftUpBuffer;
@@ -117,7 +132,7 @@ export default class Audiohacker {
         const fade1 = context.createBufferSource();
         const fade2 = context.createBufferSource();
         const fadeBuffer = this.createFadeBuffer(context, bufferTime, fadeTime);
-        fade1.buffer = fadeBuffer
+        fade1.buffer = fadeBuffer;
         fade2.buffer = fadeBuffer;
         fade1.loop = true;
         fade2.loop = true;
@@ -139,7 +154,7 @@ export default class Audiohacker {
         mix2.connect(output);
 
         // Start
-        const t = context.currentTime + 0.050;
+        const t = context.currentTime + 0.05;
         const t2 = t + bufferTime - fadeTime;
         mod1.start(t);
         mod2.start(t2);
@@ -163,15 +178,17 @@ export default class Audiohacker {
         this.delay1 = delay1;
         this.delay2 = delay2;
 
-        this.setDelay(delayTime);
-
-        this.sync = context.createDelay();
+        this.setPitchDelay(delayTime);
 
         this.output.connect(this.context.destination);
         mediaSource.connect(this.input);
     }
 
-    createFadeBuffer(context: AudioContext, activeTime: number, fadeTime: number): AudioBuffer {
+    createFadeBuffer(
+        context: AudioContext,
+        activeTime: number,
+        fadeTime: number
+    ): AudioBuffer {
         const length1 = activeTime * context.sampleRate;
         const length2 = (activeTime - 2 * fadeTime) * context.sampleRate;
         const length = length1 + length2;
@@ -206,7 +223,12 @@ export default class Audiohacker {
         return buffer;
     }
 
-    createDelayTimeBuffer(context: AudioContext, activeTime: number, fadeTime: number, shiftUp: boolean): AudioBuffer {
+    createDelayTimeBuffer(
+        context: AudioContext,
+        activeTime: number,
+        fadeTime: number,
+        shiftUp: boolean
+    ): AudioBuffer {
         const length1 = activeTime * context.sampleRate;
         const length2 = (activeTime - 2 * fadeTime) * context.sampleRate;
         const length = length1 + length2;
@@ -218,9 +240,8 @@ export default class Audiohacker {
             if (shiftUp)
                 // This line does shift-up transpose
                 p[i] = (length1 - i) / length;
-            else
-                // This line does shift-down transpose
-                p[i] = i / length1;
+            // This line does shift-down transpose
+            else p[i] = i / length1;
         }
 
         // 2nd part
@@ -232,31 +253,169 @@ export default class Audiohacker {
     }
 
     setPitchOffset(mult: number): void {
-        if (mult > 0) { // pitch up
+        if (mult > 0) {
+            // pitch up
             this.mod1Gain.gain.value = 0;
             this.mod2Gain.gain.value = 0;
             this.mod3Gain.gain.value = 1;
             this.mod4Gain.gain.value = 1;
-        } else { // pitch down
+        } else {
+            // pitch down
             this.mod1Gain.gain.value = 1;
             this.mod2Gain.gain.value = 1;
             this.mod3Gain.gain.value = 0;
             this.mod4Gain.gain.value = 0;
         }
-        this.setDelay(delayTime * Math.abs(mult));
+        this.setPitchDelay(delayTime * Math.abs(mult));
     }
 
-    setDelay(delayTime: number): void {
-        this.modGain1.gain.setTargetAtTime(0.5 * delayTime, 0, 0.010);
-        this.modGain2.gain.setTargetAtTime(0.5 * delayTime, 0, 0.010);
+    setPitchDelay(delayTime: number): void {
+        this.modGain1.gain.setTargetAtTime(0.5 * delayTime, 0, 0.01);
+        this.modGain2.gain.setTargetAtTime(0.5 * delayTime, 0, 0.01);
     }
 
     setVolume(volume: number): void {
         this.output.gain.value = volume;
     }
 
-    setSync(sync: number): void {
-        this.sync.delayTime.value = sync;
+    setDelay(delay: number): void {
+        // this.mediaSource.disconnect(this.delay);
+        this.mediaSource.connect(this.input);
+        if (!this.delay) {
+            this.delay = this.context.createDelay(120.0);
+        }
+        if (delay === 0 && this.delay?.delayTime.value > 0) {
+            this.delay.delayTime.value = 0;
+            try {
+                this.mediaSource.disconnect(this.delay);
+                this.delay.disconnect(this.context.destination);
+            } catch (e) {}
+
+            this.delay = null;
+            this.mediaSource.connect(this.input);
+        } else if (delay > 0) {
+            try {
+                this.mediaSource.disconnect(this.input);
+            } catch (e) {}
+
+            // this.delay.connect(this.input);
+            this.mediaSource.connect(this.delay);
+            this.delay.connect(this.context.destination);
+            this.delay.delayTime.value = delay;
+        }
+    }
+
+    lerp(start, end, t) {
+        return start + (end - start) * t; // 线性插值函数
+    }
+
+    setStereoPanner(value: number) {
+        if (!this.stereo) {
+            this.stereo = this.context.createStereoPanner();
+        }
+
+        if (value !== 0) {
+            try {
+                this.mediaSource?.disconnect(this.input);
+                this.mediaSource?.connect(this.stereo);
+                this.stereo.connect(this.context.destination);
+            } catch (e) {}
+        } else {
+            if (this.delay && this.delay.delayTime.value === 0) {
+                this.mediaSource?.connect(this.input);
+            }
+
+            this.mediaSource?.disconnect(this.stereo);
+            this.stereo?.disconnect(this.context.destination);
+
+            this.stereo = null;
+        }
+        this.stereo.pan.value = value;
+    }
+
+    setPanner(isOn: boolean) {
+        if (!this.panner) {
+            this.panner = this.context.createPanner();
+            this.pannerGain = this.context.createGain();
+        }
+        if (isOn === true) {
+            try {
+                this.mediaSource.disconnect(this.input);
+                // this.pannerGain.disconnect(this.pannerGain);
+                // this.mediaSource.disconnect(this.delay);
+                // this.delay.disconnect(this.context.destination);
+            } catch (e) {}
+
+            this.panner.panningModel = "HRTF"; // 使用 HRTF（头相关传递函数）
+            this.panner.distanceModel = "linear"; //
+            this.panner.refDistance = 50; // 参考距离
+            this.panner.maxDistance = 1000; // 最大距离
+            this.panner.rolloffFactor = 1; // 衰减因子
+            this.panner.coneInnerAngle = 360;
+            this.panner.coneOuterAngle = 0; // 外径
+            this.panner.coneOuterGain = 0;
+            this.pannerGain.gain.value = 3;
+
+            // 定义音源移动的参数
+            const speed = 2; // 移动速度
+            // const radius = 20; // 移动半径
+            const a = 10; // 椭圆长轴
+            const b = 5; // 椭圆短轴
+
+            let angle = 0; // 角度
+
+            const animate = () => {
+                if (!this.panner) return;
+
+                // 计算 x, y, z 坐标，模拟围绕原点的圆周运动
+                const x = a * Math.sin(angle);
+                const y = b * Math.cos(angle);
+
+                // 使用线性插值平滑过渡位置
+                this.panner.setPosition(
+                    this.lerp(this.panner.positionX.value, x, 0.1),
+                    this.lerp(this.panner.positionY.value, y, 0.1),
+                    1
+                );
+
+                // 更新方向以模拟音源相对听者的变化
+                // this.panner.setOrientation(0, 0, 1); // 向听者方向设置朝向
+                this.panner.setOrientation(-x, -y, 0);
+
+                // 动态调整音量渐变
+                const distance = Math.sqrt(x * x + y * y);
+                const targetGain = Math.max(0, 1 - distance / a) * 10; // 根据距离调整音量
+
+                this.pannerGain.gain.setTargetAtTime(
+                    targetGain,
+                    this.context.currentTime,
+                    0.01
+                ); // 淡入
+
+                // 更新角度，循环移动
+                angle += speed * 0.01; // 适当增大角度，以控制移动速度
+
+                // 循环调用 animate，创建平滑动画
+                requestAnimationFrame(animate);
+            };
+
+            // 开始动画
+            animate();
+
+            // this.panner.connect(this.input);
+            this.panner.connect(this.pannerGain);
+            this.mediaSource.connect(this.panner);
+            this.panner.connect(this.context.destination);
+        } else {
+            try {
+                this.mediaSource?.disconnect(this.panner);
+                this.panner?.disconnect(this.context.destination);
+                if (this.delay && this.delay.delayTime.value === 0) {
+                    this.mediaSource?.connect(this.input);
+                }
+            } catch (e) {}
+            this.panner = null;
+        }
     }
 
     disconnect(): void {
