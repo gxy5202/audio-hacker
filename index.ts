@@ -62,6 +62,9 @@ export default class Audiohacker {
     delay: DelayNode;
     panner: PannerNode;
     pannerGain: GainNode;
+    pannerFilter: BiquadFilterNode;
+    pannerConvolver: ConvolverNode;
+    pannerCompressor: DynamicsCompressorNode;
     stereo: StereoPannerNode;
 
     constructor(
@@ -321,7 +324,7 @@ export default class Audiohacker {
                 this.stereo.connect(this.context.destination);
             } catch (e) {}
         } else {
-            if (this.delay && this.delay.delayTime.value === 0) {
+            if ((this.delay && this.delay.delayTime.value === 0) && !this.panner) {
                 this.mediaSource?.connect(this.input);
             }
 
@@ -337,6 +340,9 @@ export default class Audiohacker {
         if (!this.panner) {
             this.panner = this.context.createPanner();
             this.pannerGain = this.context.createGain();
+            this.pannerFilter = this.context.createBiquadFilter();
+            this.pannerConvolver = this.context.createConvolver();
+            this.pannerCompressor = this.context.createDynamicsCompressor();
         }
         if (isOn === true) {
             try {
@@ -348,19 +354,19 @@ export default class Audiohacker {
 
             this.panner.panningModel = "HRTF"; // 使用 HRTF（头相关传递函数）
             this.panner.distanceModel = "linear"; //
-            this.panner.refDistance = 50; // 参考距离
+            this.panner.refDistance = 1; // 参考距离
             this.panner.maxDistance = 1000; // 最大距离
             this.panner.rolloffFactor = 1; // 衰减因子
             this.panner.coneInnerAngle = 360;
-            this.panner.coneOuterAngle = 0; // 外径
-            this.panner.coneOuterGain = 0;
-            this.pannerGain.gain.value = 3;
-
+            // this.panner.coneOuterAngle = 90; // 外径
+            // this.panner.coneOuterGain = 0.3;
+            this.pannerGain.gain.value = 1;
+        
             // 定义音源移动的参数
-            const speed = 2; // 移动速度
+            const speed = 1; // 移动速度
             // const radius = 20; // 移动半径
             const a = 10; // 椭圆长轴
-            const b = 5; // 椭圆短轴
+            const b = 8; // 椭圆短轴
 
             let angle = 0; // 角度
 
@@ -370,27 +376,13 @@ export default class Audiohacker {
                 // 计算 x, y, z 坐标，模拟围绕原点的圆周运动
                 const x = a * Math.sin(angle);
                 const y = b * Math.cos(angle);
-
+        
                 // 使用线性插值平滑过渡位置
                 this.panner.setPosition(
                     this.lerp(this.panner.positionX.value, x, 0.1),
                     this.lerp(this.panner.positionY.value, y, 0.1),
                     1
                 );
-
-                // 更新方向以模拟音源相对听者的变化
-                // this.panner.setOrientation(0, 0, 1); // 向听者方向设置朝向
-                this.panner.setOrientation(-x, -y, 0);
-
-                // 动态调整音量渐变
-                const distance = Math.sqrt(x * x + y * y);
-                const targetGain = Math.max(0, 1 - distance / a) * 10; // 根据距离调整音量
-
-                this.pannerGain.gain.setTargetAtTime(
-                    targetGain,
-                    this.context.currentTime,
-                    0.01
-                ); // 淡入
 
                 // 更新角度，循环移动
                 angle += speed * 0.01; // 适当增大角度，以控制移动速度
@@ -402,19 +394,23 @@ export default class Audiohacker {
             // 开始动画
             animate();
 
-            // this.panner.connect(this.input);
-            this.panner.connect(this.pannerGain);
+            // // this.panner.connect(this.input);
+            // this.panner.connect(this.pannerGain);
             this.mediaSource.connect(this.panner);
             this.panner.connect(this.context.destination);
         } else {
             try {
                 this.mediaSource?.disconnect(this.panner);
                 this.panner?.disconnect(this.context.destination);
-                if (this.delay && this.delay.delayTime.value === 0) {
+                if ((this.delay && this.delay.delayTime.value === 0) && !this.stereo) {
                     this.mediaSource?.connect(this.input);
                 }
             } catch (e) {}
             this.panner = null;
+            this.pannerFilter = null;
+            this.pannerGain = null;
+            this.pannerConvolver = null;
+            this.pannerCompressor = null
         }
     }
 
